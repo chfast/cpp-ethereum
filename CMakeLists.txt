@@ -15,7 +15,7 @@ include(EthPolicy)
 eth_policy()
 
 # project name and version should be set after cmake_policy CMP0048
-project(ethereum VERSION "0.9.42")
+project(ethereum VERSION "0.9.91")
 
 set(CMAKE_AUTOMOC ON)
 
@@ -204,22 +204,30 @@ function(createBuildInfo)
 	message("createBuildInfo()")
 
 	# Generate header file containing useful build information
+	add_custom_target(BuildInfo.h ALL
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		COMMAND ${CMAKE_COMMAND} -DETH_SOURCE_DIR="${CMAKE_SOURCE_DIR}" -DETH_DST_DIR="${CMAKE_BINARY_DIR}" -DETH_CMAKE_DIR="${ETH_CMAKE_DIR}"
+			-DETH_BUILD_TYPE="${_cmake_build_type}" -DETH_BUILD_PLATFORM="${ETH_BUILD_PLATFORM}"
+			-DPROJECT_VERSION="${PROJECT_VERSION}" -DETH_FATDB="${FATDB10}" -P "${ETH_SCRIPTS_DIR}/buildinfo.cmake"
+		)
+
+	# Generate header file containing configuration info
 	if (FATDB)
 		set(FATDB10 1)
 	else()
 		set(FATDB10 0)
 	endif()
-	add_custom_target(BuildInfo.h ALL
+	add_custom_target(ConfigInfo.h ALL
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${CMAKE_COMMAND} -DETH_SOURCE_DIR="${CMAKE_SOURCE_DIR}" -DETH_DST_DIR="${CMAKE_BINARY_DIR}"
-			-DETH_BUILD_TYPE="${_cmake_build_type}" -DETH_BUILD_PLATFORM="${ETH_BUILD_PLATFORM}" -DETH_CMAKE_DIR="${ETH_CMAKE_DIR}"
-			-DPROJECT_VERSION="${PROJECT_VERSION}" -DETH_FATDB="${FATDB10}"
-			-P "${ETH_SCRIPTS_DIR}/buildinfo.cmake"
+		COMMAND ${CMAKE_COMMAND} -DETH_SOURCE_DIR="${CMAKE_SOURCE_DIR}" -DETH_DST_DIR="${CMAKE_BINARY_DIR}" -DETH_CMAKE_DIR="${ETH_CMAKE_DIR}"
+			-DETH_FATDB="${FATDB10}" -DETH_HEADERFILE="ConfigInfo" -P "${ETH_SCRIPTS_DIR}/buildinfo.cmake"
 		)
+
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 	set(CMAKE_INCLUDE_CURRENT_DIR ON)
 	set(SRC_LIST BuildInfo.h)
+	set(SRC_LIST ConfigInfo.h)
 endfunction()
 
 
@@ -400,7 +408,6 @@ endif ()
 if (JSCONSOLE)
 	add_subdirectory(libjsengine)
 	add_subdirectory(libjsconsole)
-	add_subdirectory(ethconsole)
 endif ()
 
 if (NOT WIN32)
@@ -484,3 +491,4 @@ if (GRAPHVIZDOT)
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 	)
 endif()
+

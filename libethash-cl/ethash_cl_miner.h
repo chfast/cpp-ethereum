@@ -19,7 +19,7 @@
 class ethash_cl_miner
 {
 private:
-	enum { c_maxSearchResults = 1, c_bufferCount = 1, c_hashBatchSize = 1024 };
+	enum { c_hashBatchSize = 1024 };
 
 public:
 	struct search_hook

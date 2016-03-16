@@ -433,6 +433,7 @@ void ethash_cl_miner::search(uint8_t const* header, uint64_t target, search_hook
 			ETHCL_LOG("Update block header buffer");
 			std::memcpy(m_headerData, header, 32);
 			m_queue.enqueueWriteBuffer(m_header, false, 0, 32, header);
+			m_startNonce = 0; // reset nonce space
 		}
 
 		// this can't be a static because in MacOSX OpenCL implementation a segfault occurs when a static is passed to OpenCL functions
@@ -453,13 +454,17 @@ void ethash_cl_miner::search(uint8_t const* header, uint64_t target, search_hook
 		m_searchKernel.setArg(4, target);
 		m_searchKernel.setArg(5, ~0u);
 
-		random_device engine;
-		uint64_t start_nonce = uniform_int_distribution<uint64_t>()(engine);
-		for (;; start_nonce += m_globalWorkSize)
+		if (!m_startNonce)
+		{
+			random_device engine;
+			m_startNonce = uniform_int_distribution<uint64_t>()(engine);
+		}
+		ETHCL_LOG("start nonce: " << m_startNonce);
+		for (;;)
 		{
 			//auto t = chrono::high_resolution_clock::now();
 			// supply output buffer to kernel
-			m_searchKernel.setArg(3, start_nonce);
+			m_searchKernel.setArg(3, m_startNonce);
 
 			// execute it!
 			m_queue.enqueueNDRangeKernel(m_searchKernel, cl::NullRange, m_globalWorkSize, s_workgroupSize);
@@ -471,16 +476,21 @@ void ethash_cl_miner::search(uint8_t const* header, uint64_t target, search_hook
 			bool exit = false;
 			if (result != c_notFound)
 			{
-				auto nonce = start_nonce + result;
+				auto nonce = m_startNonce + result;
 				exit = hook.found(&nonce, 1);
 				// reset search buffer if we're still going
 				result = c_notFound;
 				m_queue.enqueueWriteBuffer(m_searchBuffer, true, 0, 4, &result);
 			}
 
-			exit |= hook.searched(start_nonce, m_globalWorkSize); // always report searched before exit
+			exit |= hook.searched(m_startNonce, m_globalWorkSize); // always report searched before exit
+			m_startNonce += m_globalWorkSize;
+
 			if (exit)
+			{
+				ETHCL_LOG("exit");
 				break;
+			}
 
 			// adjust global work size depending on last search time
 			// if (s_msPerBatch)

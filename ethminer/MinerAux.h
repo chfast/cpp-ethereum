@@ -436,7 +436,7 @@ public:
 			if (m_minerType == MinerType::CUDA)
 				EthashCUDAMiner::listDevices();
 #endif
-			exit(0);
+			return;
 		}
 
 		if (m_minerType == MinerType::CPU)
@@ -567,7 +567,6 @@ private:
 		h256 seedHash = EthashAux::seedHash(_n);
 		cout << "Initializing DAG for epoch beginning #" << (_n / 30000 * 30000) << " (seedhash " << seedHash.abridged() << "). This will take a while." << endl;
 		EthashAux::full(seedHash, true);
-		exit(0);
 	}
 
 	void doBenchmark(MinerType _m, bool _phoneHome, unsigned _warmupDuration = 15, unsigned _trialDuration = 3, unsigned _trials = 5)
@@ -652,7 +651,6 @@ private:
 			}
 		}
 #endif
-		exit(0);
 	}
 
 	void doSimulation(MinerType _m, int difficulty = 20)
@@ -857,7 +855,6 @@ private:
 				cerr << endl;
 			}
 #endif
-		exit(0);
 	}
 
 	void doStratum(MinerType _m, unsigned _recheckPeriod, string const & host, string const & port, string const & user, string const & pass)

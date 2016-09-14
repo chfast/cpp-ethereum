@@ -27,6 +27,8 @@
 # (c) 2016 cpp-ethereum contributors.
 #------------------------------------------------------------------------------
 
+set -e
+
 ZIP_SUFFIX=$1
 ZIP_TEMP_DIR=$(pwd)/zip/
 TESTS=$2
@@ -48,9 +50,7 @@ cp ethminer/ethminer                   $ZIP_TEMP_DIR
 cp ethvm/ethvm                         $ZIP_TEMP_DIR
 cp rlp/rlp                             $ZIP_TEMP_DIR
 if [[ "$TESTS" == "On" ]]; then
-    cp test/libethereum/test/testeth       $ZIP_TEMP_DIR
-    cp test/libweb3core/test/testweb3core  $ZIP_TEMP_DIR
-    cp test/webthree/test/testweb3         $ZIP_TEMP_DIR
+    cp test/testeth       $ZIP_TEMP_DIR
 fi
 
 # Copy all the dynamic libraries into a temporary directory prior to ZIP creation.

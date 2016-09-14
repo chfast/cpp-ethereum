@@ -22,53 +22,50 @@
  * CLI module for mining.
  */
 
-#include <thread>
-#include <chrono>
-#include <fstream>
-#include <iostream>
-#include <signal.h>
-
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/trim_all.hpp>
-
-#include <libdevcore/FileSystem.h>
-#include <libevmcore/Instruction.h>
-#include <libethcore/Exceptions.h>
-#include <libethcore/BasicAuthority.h>
-#include <libdevcore/SHA3.h>
+#include <boost/algorithm/string/case_conv.hpp>
 #include <libdevcore/CommonJS.h>
-#include <libethereum/GenericFarm.h>
-#include <libethashseal/EthashAux.h>
+#include <libethcore/BasicAuthority.h>
+#include <libethcore/Exceptions.h>
 #include <libethashseal/EthashGPUMiner.h>
 #include <libethashseal/EthashCPUMiner.h>
-#include <libethashseal/Ethash.h>
 
 #if ETH_ETHASHCL
-#include <libethash-cl/ethash_cl_miner.h>
+	#include <libethash-cl/ethash_cl_miner.h>
 #endif // ETH_ETHASHCL
 
 #if ETH_JSONRPC
-#include <jsonrpccpp/client/connectors/httpclient.h>
+	#include <jsonrpccpp/client/connectors/httpclient.h>
+	#include "FarmClient.h"
 #endif // ETH_JSONRPC
 
-#if ETH_AFTER_REPOSITORY_MERGE
 #include "cpp-ethereum/BuildInfo.h"
-#else
-#include "ethereum/BuildInfo.h"
-#endif // ETH_AFTER_REPOSITORY_MERGE
 
-#if ETH_JSONRPC
-#include "PhoneHome.h"
-#include "FarmClient.h"
-#endif // ETH_JSONRPC
+// TODO - having using derivatives in header files is very poor style, and we need to fix these up.
+//
+// http://stackoverflow.com/questions/4872373/why-is-including-using-namespace-into-a-header-file-a-bad-idea-in-c
+// 
+// "However you'll virtually never see a using directive in a header file (at least not outside of scope).
+// The reason is that using directive eliminate the protection of that particular namespace, and the effect last
+// until the end of current compilation unit. If you put a using directive (outside of a scope) in a header file,
+// it means that this loss of "namespace protection" will occur within any file that include this header,
+// which often mean other header files."
+//
+// Bob has already done just that in https://github.com/bobsummerwill/cpp-ethereum/commits/cmake_fixes/ethminer,
+// and we should apply those changes back to 'develop'.  It is probably best to defer that cleanup
+// until after attempting to backport the Genoil ethminer changes, because they are fairly extensive
+// in terms of lines of change, though all the changes are just adding explicit namespace prefixes.
+// So let's start with just the subset of changes which minimizes the #include dependencies.
+//
+// See https://github.com/bobsummerwill/cpp-ethereum/commit/53af845268b91bc6aa1dab53a6eac675157a072b
+// See https://github.com/bobsummerwill/cpp-ethereum/commit/3b9e581d7c04c637ebda18d3d86b5a24d29226f4
+//
+// More generally, the fact that nearly all of the code for ethminer is actually in the 'MinerAux.h'
+// header file, rather than in a source file, is also poor style and should probably be addressed.
+// Perhaps there is some historical reason for this which I am unaware of?
 
 using namespace std;
 using namespace dev;
 using namespace dev::eth;
-using namespace boost::algorithm;
-using dev::eth::Instruction;
-
-#undef RETURN
 
 bool isTrue(std::string const& _m)
 {
@@ -188,19 +185,6 @@ public:
 			m_clAllowCPU = true;
 		else if (arg == "--cl-extragpu-mem" && i + 1 < argc)
 			m_extraGPUMemory = 1000000 * stol(argv[++i]);
-		else if (arg == "--phone-home" && i + 1 < argc)
-		{
-			string m = argv[++i];
-			if (isTrue(m))
-				m_phoneHome = true;
-			else if (isFalse(m))
-				m_phoneHome = false;
-			else
-			{
-				cerr << "Bad " << arg << " option: " << m << endl;
-				BOOST_THROW_EXCEPTION(BadArgument());
-			}
-		}
 		else if (arg == "--benchmark-warmup" && i + 1 < argc)
 			try {
 				m_benchmarkWarmup = stol(argv[++i]);
@@ -345,7 +329,7 @@ public:
 		if (mode == OperationMode::DAGInit)
 			doInitDAG(m_initDAG);
 		else if (mode == OperationMode::Benchmark)
-			doBenchmark(m_minerType, m_phoneHome, m_benchmarkWarmup, m_benchmarkTrial, m_benchmarkTrials);
+			doBenchmark(m_minerType, m_benchmarkWarmup, m_benchmarkTrial, m_benchmarkTrials);
 		else if (mode == OperationMode::Farm)
 			doFarm(m_minerType, m_farmURL, m_farmRecheckPeriod);
 	}
@@ -409,7 +393,7 @@ private:
 		exit(0);
 	}
 
-	void doBenchmark(std::string _m, bool _phoneHome, unsigned _warmupDuration = 15, unsigned _trialDuration = 3, unsigned _trials = 5)
+	void doBenchmark(std::string _m, unsigned _warmupDuration = 15, unsigned _trialDuration = 3, unsigned _trials = 5)
 	{
 		BlockHeader genesis;
 		genesis.setDifficulty(1 << 18);
@@ -468,24 +452,6 @@ private:
 		innerMean /= (_trials - 2);
 		cout << "min/mean/max: " << results.begin()->second.rate() << "/" << (mean / _trials) << "/" << results.rbegin()->second.rate() << " H/s" << endl;
 		cout << "inner mean: " << innerMean << " H/s" << endl;
-
-		(void)_phoneHome;
-#if ETH_JSONRPC
-		if (_phoneHome)
-		{
-			cout << "Phoning home to find world ranking..." << endl;
-			jsonrpc::HttpClient client("http://gav.ethdev.com:3000");
-			PhoneHome rpc(client);
-			try
-			{
-				unsigned ranking = rpc.report_benchmark(platformInfo, (int)innerMean);
-				cout << "Ranked: " << ranking << " of all benchmarks." << endl;
-			}
-			catch (...)
-			{
-			}
-		}
-#endif // ETH_JSONRPC
 		exit(0);
 	}
 
@@ -628,7 +594,6 @@ private:
 	unsigned m_initDAG = 0;
 
 	/// Benchmarking params
-	bool m_phoneHome = true;
 	unsigned m_benchmarkWarmup = 3;
 	unsigned m_benchmarkTrial = 3;
 	unsigned m_benchmarkTrials = 5;

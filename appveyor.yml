@@ -27,6 +27,12 @@ configuration:
     - RelWithDebInfo
 environment:
     TESTS: On
+cache: build/evmjit/llvm
+#RDP LOGIN details for trouble shooting
+#init:
+#    - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#on_finish:
+#    - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 install:
     - git submodule update --init --recursive
     - scripts/install_deps.bat
@@ -34,7 +40,7 @@ install:
 before_build:
     - if not exist build mkdir build
     - cd build
-    - cmake -G "Visual Studio 14 2015 Win64" .. -DTESTS=%TESTS%
+    - cmake -G "Visual Studio 14 2015 Win64" .. -DTESTS=%TESTS% -DEVMJIT=On
 build_script:
     - msbuild cpp-ethereum.sln /p:Configuration=%CONFIGURATION% /m:%NUMBER_OF_PROCESSORS% /v:minimal
     - cd %APPVEYOR_BUILD_FOLDER%

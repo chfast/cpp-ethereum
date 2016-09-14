@@ -24,12 +24,16 @@
 # (c) 2016 cpp-ethereum contributors.
 #------------------------------------------------------------------------------
 
-CMAKE_BUILD_TYPE=$1
-TESTS=$2
+set -e -x
 
 # There is an implicit assumption here that we HAVE to run from repo root
-# TODO Add handling for error codes
+
 mkdir -p build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=$1 -DTESTS=$2
+if [ $(uname -s) == "Linux" ]; then
+    cmake .. -DCMAKE_BUILD_TYPE=$1 -DTESTS=$2 -DEVMJIT=On -DLLVM_DIR=/usr/lib/llvm-3.9/lib/cmake/llvm
+else
+    cmake .. -DCMAKE_BUILD_TYPE=$1 -DTESTS=$2
+fi
+
 make -j2

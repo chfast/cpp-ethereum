@@ -14,3 +14,6 @@ RUN apt -q update && \
         libmicrohttpd-dev \
         libminiupnpc-dev && \
     rm -rf /var/lib/apt/lists/*
+
+RUN apt -q update && apt -qy install ca-certificates && \
+    rm -rf /var/lib/apt/lists/*

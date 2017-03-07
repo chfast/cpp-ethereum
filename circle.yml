@@ -1,7 +1,7 @@
 version: 2
 executorType: docker
 containerInfo:
-  - image: chfast/dev-cpp-gcc:1
+  - image: chfast/dev-cpp-gcc:2
 stages:
   build:
     workDir: ~/cpp-ethereum

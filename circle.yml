@@ -1,0 +1,29 @@
+version: 2
+executorType: docker
+containerInfo:
+  - image: chfast/dev-cpp-gcc:1
+stages:
+  build:
+    workDir: ~/cpp-ethereum
+    steps:
+      - type: checkout
+      - type: shell
+        name: "Init submodules"
+        command: GIT_SSL_NO_VERIFY=true git submodule update --init
+      - type: shell
+        name: "Create build dir"
+        command: mkdir ~/build
+      - type: cache-restore
+        key: deps-{{ checksum "cmake/ProjectBoost.cmake" }}
+      - type: shell
+        name: "Configure"
+        pwd: ~/build
+        command: cmake ../cpp-ethereum
+      - type: shell
+        name: "Build"
+        pwd: ~/build
+        command: make -j4
+      - type: cache-save
+        key: deps-{{ checksum "cmake/ProjectBoost.cmake" }}
+        paths:
+          - deps

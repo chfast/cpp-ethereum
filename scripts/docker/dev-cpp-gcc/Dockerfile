@@ -15,5 +15,5 @@ RUN apt -q update && \
         libminiupnpc-dev && \
     rm -rf /var/lib/apt/lists/*
 
-RUN apt -q update && apt -qy install ca-certificates && \
+RUN apt -q update && apt -qy install ca-certificates ccache && \
     rm -rf /var/lib/apt/lists/*

@@ -14,7 +14,15 @@ stages:
         name: "Create build dir"
         command: mkdir ~/build
       - type: cache-restore
+        name: "Restore ccache"
+        key: ccache
+      - type: cache-restore
         key: deps-{{ checksum "cmake/ProjectBoost.cmake" }}
+      - type: shell
+        name: "Configure ccache"
+        command: |
+          ccache -M 0.5
+          ccache -s
       - type: shell
         name: "Configure"
         pwd: ~/build
@@ -23,13 +31,20 @@ stages:
         name: "Build"
         pwd: ~/build
         command: make -j4
+      - type: shell
+        name: "Prepare cache"
+        command: ccache -s
       - type: cache-save
         key: deps-{{ checksum "cmake/ProjectBoost.cmake" }}
         paths:
           - deps
+      - type: cache-save
+        key: ccache
+        paths:
+          - ~/.ccache
       - type: shell
         name: "Download tests"
-        pwd: ~
+        pwd: ..
         command: |
           pwd
           git clone --depth 1 https://github.com/ethereum/tests

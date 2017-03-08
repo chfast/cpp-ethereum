@@ -27,3 +27,18 @@ stages:
         key: deps-{{ checksum "cmake/ProjectBoost.cmake" }}
         paths:
           - deps
+      - type: shell
+        name: "Download tests"
+        pwd: ~
+        command: |
+          pwd
+          git clone --depth 1 https://github.com/ethereum/tests
+          ls -l tests
+      - type: shell
+        name: "Test"
+        pwd: ~/build
+        command: |
+          export ETHEREUM_TEST_PATH=~/tests
+          pwd
+          ls -l $ETHEREUM_TEST_PATH
+          test/testeth

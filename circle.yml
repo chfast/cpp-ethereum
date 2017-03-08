@@ -30,7 +30,7 @@ stages:
       - type: shell
         name: "Build"
         pwd: ~/build
-        command: make -j4
+        command: make -j5
       - type: shell
         name: "Prepare cache"
         command: ccache -s

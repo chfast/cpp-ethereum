@@ -43,17 +43,10 @@ stages:
         paths:
           - ~/.ccache
       - type: shell
-        name: "Download tests"
-        pwd: ..
-        command: |
-          pwd
-          git clone --depth 1 https://github.com/ethereum/tests
-          ls -l tests
-      - type: shell
         name: "Test"
         pwd: ~/build
         command: |
-          export ETHEREUM_TEST_PATH=~/tests
+          export ETHEREUM_TEST_PATH=~/cpp-ethereum/test/jsontests
           pwd
           ls -l $ETHEREUM_TEST_PATH
           test/testeth

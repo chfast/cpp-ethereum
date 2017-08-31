@@ -17,16 +17,28 @@ stages:
         name: "Restore ccache"
         key: ccache
       - type: cache-restore
-        key: deps-{{ checksum "cmake/ProjectBoost.cmake" }}
+        key: deps-{{ checksum "cmake/ProjectJsonRpcCpp.cmake" }}
       - type: shell
         name: "Configure ccache"
         command: |
           ccache -M 0.5
           ccache -s
       - type: shell
+        name: "Install deps for Hunter upload"
+        command: |
+          apt-get update -qq
+          apt-get install -qy python-requests
+
+      - type: shell
         name: "Configure"
         pwd: ~/build
         command: cmake ../cpp-ethereum
+
+      - type: shell
+        name: "Install deps for Hunter upload"
+        command: |
+          cmake --build ~/build --target hunter_upload_cache
+
       - type: shell
         name: "Build"
         pwd: ~/build
@@ -35,7 +47,7 @@ stages:
         name: "Prepare cache"
         command: ccache -s
       - type: cache-save
-        key: deps-{{ checksum "cmake/ProjectBoost.cmake" }}
+        key: deps-{{ checksum "cmake/ProjectJsonRpcCpp.cmake" }}
         paths:
           - deps
       - type: cache-save

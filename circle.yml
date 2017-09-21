@@ -1,7 +1,7 @@
 version: 1
 machine:
   xcode:
-    version: 8.3
+    version: 9.0
 
 dependencies:
   override:
@@ -9,6 +9,7 @@ dependencies:
 
 test:
   override:
+    - git submodule update --init --depth 1
     - pwd
     - ls -l
     - mkdir -p build && cd build

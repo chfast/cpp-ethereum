@@ -9,14 +9,13 @@ dependencies:
     - echo $HOMEBREW_PREFIX
     - make --version
     - python --version
-    - python3 --version
-    - HOMEBREW_PREFIX=$HOME brew install cmake ninja leveldb libmicrohttpd
-    - export PATH="$HOME/bin:$PATH"
+    - pip install requests
+    - brew install cmake ninja leveldb libmicrohttpd
 
 test:
   override:
     - echo $PATH
-    - git submodule update --init --depth 1
+    - git submodule update --init --depth 100
     - pwd
     - ls -l
     - mkdir -p build && cd build
@@ -25,5 +24,6 @@ test:
     - make --version
     - ninja --version
     - cd build && cmake .. -G Ninja
-    - cd build && ninja
+    - cmake --build build --target hunter_upload_cache
+    - cd build && ninja -j8
 

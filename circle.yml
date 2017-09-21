@@ -5,6 +5,10 @@ machine:
 
 dependencies:
   override:
+    - cmake --version
+    - make --version
+    - python --version
+    - python3 --version
     - brew install cmake ninja
 
 test:

@@ -15,7 +15,7 @@ dependencies:
 test:
   override:
     - echo $PATH
-    - git submodule update --init --depth 100
+    - git submodule update --init --depth 50
     - pwd
     - ls -l
     - mkdir -p build && cd build
@@ -26,4 +26,5 @@ test:
     - cd build && cmake .. -G Ninja
     - cmake --build build --target hunter_upload_cache
     - cd build && ninja -j8
+    - build/test/testeth
 

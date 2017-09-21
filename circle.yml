@@ -9,7 +9,7 @@ dependencies:
     - make --version
     - python --version
     - python3 --version
-    - brew install cmake ninja
+    - brew install cmake ninja leveldb libmicrohttpd
 
 test:
   override:

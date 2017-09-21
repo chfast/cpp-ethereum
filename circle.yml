@@ -1,4 +1,16 @@
 version: 1
 machine:
   xcode:
-    version: 9
+    version: 9.0
+
+compile:
+  override: |
+    pwd
+    ls -l
+    mkdir -p build && cd build
+    clang --version
+    cmake --version
+    make --version
+    ninja --version
+    homebrew install cmake ninja
+

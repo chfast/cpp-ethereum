@@ -1,20 +1,20 @@
 version: 1
 machine:
   xcode:
-    version: 8.3
+    version: 9.0
 
 dependencies:
-  pre:
+  override:
     - brew install cmake ninja
 
 test:
-  override: |
-    pwd
-    ls -l
-    mkdir -p build && cd build
-    clang --version
-    cmake --version
-    make --version
-    ninja --version
-    homebrew install cmake ninja
+  override:
+    - pwd
+    - ls -l
+    - mkdir -p build && cd build
+    - clang --version
+    - cmake --version
+    - make --version
+    - ninja --version
+    - homebrew install cmake ninja
 

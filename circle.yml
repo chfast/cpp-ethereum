@@ -16,5 +16,6 @@ test:
     - cmake --version
     - make --version
     - ninja --version
-    - homebrew install cmake ninja
+    - cd build && cmake .. -G Ninja
+    - cd build && ninja
 

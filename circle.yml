@@ -26,5 +26,5 @@ test:
     - cd build && cmake .. -G Ninja
     - cmake --build build --target hunter_upload_cache
     - cd build && ninja -j8
-    - build/test/testeth
+    - ETHEREUM_TEST_PATH=test/jsontests build/test/testeth
 
